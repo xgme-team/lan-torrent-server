@@ -1,0 +1,15 @@
+[storage]
+;downloads=@XLTS_DEFAULT_DOWNLOADDIR@
+;torrents=@XLTS_DEFAULT_TORRENTDIR@
+;resumedata=@XLTS_DEFAULT_RESUMEDATADIR@
+;tmpdir=
+;format=plain
+;use_sparse_files=no
+
+[torrent]
+;cachesize=1024
+;...
+
+[httpd]
+;prefix=/
+;port=8080

@@ -1,0 +1,11 @@
+# Specific files and directories
+/build/
+
+# Files created by editors
+*.user
+*~
+.*.swp
+
+# Operating system files
+Thumbs.db
+.DS_Store

@@ -1,0 +1,16 @@
+[Unit]
+Description=XGME Lan Torrent Server
+After=network.target auditd.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart="@CMAKE_INSTALL_FULL_BINDIR@/@XLTS_EXECUTABLE@" \
+    --inifile="@CMAKE_INSTALL_FULL_SYSCONFDIR@/@XLTS_SERVICE@.ini"
+User=nobody
+
+Restart=on-failure
+WatchdogSec=4s
+
+[Install]
+WantedBy=multi-user.target
