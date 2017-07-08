@@ -94,5 +94,7 @@ if (XLTS_USE_SYSTEMD)
 	install(FILES "${PROJECT_BINARY_DIR}/${XLTS_SERVICE}.service"
 		DESTINATION "lib/systemd/system") # Works ´with prefix / and /usr only
 
-	install(CODE "execute_process(COMMAND systemctl daemon-reload)")
+	install(CODE "message(
+		\"You may have to run `systemctl daemon-reload` before using Systemd\"
+		\"\nto control the service '${XLTS_SERVICE}'.\")")
 endif()
