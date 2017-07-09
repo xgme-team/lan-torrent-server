@@ -44,7 +44,8 @@ set(XLTS_DEFAULT_DOWNLOADDIR   "downloads"                           CACHE PATH
 ## Use Systemd when desired
 if (XLTS_USE_SYSTEMD)
 	find_package(Systemd REQUIRED)
-	add_definitions(-DUSE_SYSTEMD)
+	add_definitions(-DXLTS_USE_SYSTEMD)
+	link_libraries(Systemd::Systemd)
 endif()
 
 ## Create header with build information
@@ -71,6 +72,8 @@ endif()
 ## Use C++11 per default
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
+## Enable thread support
+link_libraries(Threads::Threads)
 
 ## Add components
 add_subdirectory("src")
