@@ -2,13 +2,13 @@
 #define CONFIGURATION_HPP
 
 /**
- * @file configuration.h
- * File contains types and functions related to configuration management.
+ * @file configuration.hpp
+ * File containing types and functions related to configuration management.
  *
  * The file declares the global variable {@link config} and it's type called
  * {@link configuration_t}. Other components can access the configuration
  * through this variable. It is initialized by {@link load_configuration()}
- * which is executed first after starting the application.
+ * which is executed when starting the application.
  */
 
 #include <cstdint>
