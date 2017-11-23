@@ -69,8 +69,8 @@ if (XLTS_DOC_TARGET)
         COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif()
 
-## Use C++11 per default
-set(CMAKE_CXX_STANDARD 11)
+## Use C++14 per default
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 ## Enable thread support
 link_libraries(Threads::Threads)
