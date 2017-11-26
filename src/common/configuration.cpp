@@ -152,12 +152,12 @@ void load_configuration(int argc, const char *const argv[])
                  value<std::uint16_t>(&cfg.httpd.port)
                  ->value_name("port")
                  ->default_value(8080),
-                 "port to listen on for HTTP requests")
+                 "Port to listen on for HTTP requests")
             ("httpd.prefix",
                  value<string>(&cfg.httpd.prefix)
                  ->value_name("prefix")
                  ->default_value("/"),
-                 "prefix for the pathes used by the HTTP server")
+                 "Prefix for paths used by the HTTP server")
             ;
 
     variables_map vm;
