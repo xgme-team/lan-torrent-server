@@ -75,6 +75,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 ## Enable thread support
 link_libraries(Threads::Threads)
 
+## Workaround for undefined references in Boost.Stacktrace
+link_libraries(dl)
+
 ## Add components
 add_subdirectory("src")
 
