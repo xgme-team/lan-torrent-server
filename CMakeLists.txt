@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 include(GNUInstallDirs)
 find_package(Doxygen)
 find_package(GTest)
-find_package(Boost 1.65 REQUIRED COMPONENTS program_options)
+find_package(Boost 1.65 REQUIRED COMPONENTS log program_options)
 find_package(Libmicrohttpd REQUIRED)
 find_package(LibtorrentRasterbar 1.1 REQUIRED)
 find_package(Threads REQUIRED)
@@ -77,6 +77,10 @@ link_libraries(Threads::Threads)
 
 ## Workaround for undefined references in Boost.Stacktrace
 link_libraries(dl)
+## Workaround for undefined references in Boost.Log
+if (NOT Boost_USE_STATIC_LIBS)
+    add_definitions(-DBOOST_LOG_DYN_LINK)
+endif()
 
 ## Add components
 add_subdirectory("src")

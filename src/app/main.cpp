@@ -13,6 +13,7 @@
 
 #include <configuration.hpp>
 #include <errorhandling.hpp>
+#include <logging.hpp>
 
 
 static void sighandler(int)
@@ -34,6 +35,9 @@ static int main0(int argc, char *argv[])
 {
     using std::chrono::microseconds;
     using namespace std::literals::chrono_literals;
+
+    // Initialize logging
+    logging_init();
 
 #   ifdef XLTS_USE_SYSTEMD
         sd_notify(0, "STATUS=Loading configuration ...\n");
@@ -101,16 +105,19 @@ static int main0(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    // TODO Log proper error messages on failure
     try {
         return main0(argc, argv);
     } catch (const os_file_error &e) {
+        LOG_FAILURE(e) << e.what();
         return EX_OSFILE;
     } catch (const os_error &e) {
+        LOG_FAILURE(e) << e.what();
         return EX_OSERR;
     } catch (const std::bad_alloc &e) {
+        LOG_FAILURE(e) << e.what();
         return EX_OSERR;
-    } catch (const boost::exception &e) {
+    } catch (const std::exception &e) {
+        LOG_FAILURE(e) << e.what();
         return EX_SOFTWARE;
     }
 }

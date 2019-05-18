@@ -50,7 +50,9 @@ private:
  * causing the exception.
  */
 struct os_error : virtual basic_error {
+    os_error() = default;
     os_error(const char *what) : basic_error(what) {}
+    os_error(const os_error &) = default;
 };
 
 /**
@@ -63,7 +65,9 @@ struct os_error : virtual basic_error {
  * system errors regarding to user files.
  */
 struct os_file_error : virtual os_error {
+    os_file_error() = default;
     os_file_error(const char *what) : os_error(what) {}
+    os_file_error(const os_file_error &) = default;
 };
 
 /**
