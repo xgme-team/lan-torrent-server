@@ -5,7 +5,6 @@
 
 #include <signal.h>
 #include <sysexits.h>
-#include <syslog.h>
 
 #ifdef XLTS_USE_SYSTEMD
 #   include <systemd/sd-daemon.h>
@@ -22,7 +21,7 @@ static void sighandler(int)
 }
 
 #ifdef XLTS_USE_SYSTEMD
-    std::chrono::microseconds update_interval;
+    static std::chrono::microseconds update_interval;
     static void statusupdates()
     {
         sd_notify(0, "STATUS=Application is running ...\n"
@@ -31,7 +30,7 @@ static void sighandler(int)
     }
 #endif
 
-static int main0(int argc, char *argv[])
+static void main0(int argc, char *argv[])
 {
     using std::chrono::microseconds;
     using namespace std::literals::chrono_literals;
@@ -54,7 +53,7 @@ static int main0(int argc, char *argv[])
     sigset_t signal_mask;
     OSCHECK(sigfillset,(&signal_mask), == 0);
                                                       // This signals are raised
-    OSCHECK(sigdelset,(&signal_mask, SIGBUS),  == 0); // on fatal errors. It
+    OSCHECK(sigdelset,(&signal_mask, SIGBUS),  == 0); // on fatal errors.
     OSCHECK(sigdelset,(&signal_mask, SIGFPE),  == 0); // According to the man
     OSCHECK(sigdelset,(&signal_mask, SIGILL),  == 0); // page, it would cause
     OSCHECK(sigdelset,(&signal_mask, SIGSEGV), == 0); // undefined behavior to
@@ -106,7 +105,8 @@ static int main0(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     try {
-        return main0(argc, argv);
+        main0(argc, argv);
+        return EX_OK;
     } catch (const os_file_error &e) {
         LOG_FAILURE(e) << e.what();
         return EX_OSFILE;

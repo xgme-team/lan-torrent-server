@@ -148,7 +148,7 @@ const char *crop_ampersand_and_stdnamespace(const char *) noexcept;
             << errinfo::trace(boost::stacktrace::stacktrace())          \
             << errinfo::srcfunc(BOOST_CURRENT_FUNCTION)                 \
             << errinfo::srcfile(__FILE__)                               \
-            << errinfo::srcline((int)__LINE__)
+            << errinfo::srcline(static_cast<int>(__LINE__))
 
 /**
  * Throws an os_error with the given message.
