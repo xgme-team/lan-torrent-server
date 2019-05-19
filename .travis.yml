@@ -1,0 +1,56 @@
+os: linux
+dist: xenial
+language: cpp
+install:
+- mkdir -p build-dep && pushd build-dep
+- prefix="$(pwd)"
+- >
+  [ -f "boost_1_65_1.tar.bz2" ] ||
+  curl -LO "https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.bz2"
+- >
+  [ -f "libtorrent-rasterbar-1.2.1.tar.gz" ] ||
+  curl -LO "https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_2_1/libtorrent-rasterbar-1.2.1.tar.gz"
+- >
+  [ -d "boost_1_65_1" ] ||
+  tar -xf "boost_1_65_1.tar.bz2"
+- >
+  [ -d "libtorrent-rasterbar-1.2.1" ] ||
+  tar -xf "libtorrent-rasterbar-1.2.1.tar.gz"
+- pushd "boost_1_65_1/tools/build"
+- ./bootstrap.sh
+- ./b2 install --prefix="$prefix"
+- export PATH="$prefix/bin:$PATH"
+- popd
+- pushd "boost_1_65_1"
+- >
+  b2 --prefix="$prefix"
+  --with-log --with-program_options --with-random --with-stacktrace
+  link=static threading=multi runtime-link=shared
+  variant=debug install
+- popd
+- pushd "libtorrent-rasterbar-1.2.1"
+- export BOOST_ROOT="$prefix/boost_1_65_1"
+- >
+  b2 --prefix="$prefix"
+  link=static boost-link=static runtime-link=shared
+  variant=debug cxxflags=-std=c++11 install
+- popd
+- popd
+script:
+- >
+  cmake .
+  -DBOOST_ROOT=build-dep/boost_1_65_1 -DBoost_NO_SYSTEM_PATHS=ON
+  -DCMAKE_PREFIX_PATH=build-dep -DCMAKE_BUILD_TYPE=Debug
+  && make && make test
+compiler:
+- clang
+- gcc
+cache:
+  directories:
+  - build-dep
+addons:
+  apt:
+    packages:
+    - doxygen
+    - libgtest-dev
+    - libmicrohttpd-dev
