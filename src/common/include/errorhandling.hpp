@@ -20,15 +20,12 @@ class basic_error
     : public virtual std::exception
     , public virtual boost::exception {
 public:
-    const char *what() const noexcept override
-    {
-        return mWhat;
-    }
+    const char *what() const noexcept override;
 protected:
     basic_error() = default;
-    basic_error(const char *what) : mWhat(what) {}
+    basic_error(const char *what);
     basic_error(const basic_error &) = default;
-    virtual ~basic_error() = default;
+    virtual ~basic_error() override = default;
 private:
     const char *mWhat = "";
 };
@@ -41,7 +38,7 @@ private:
  */
 struct assertion_error : virtual basic_error {
     assertion_error() = default;
-    assertion_error(const char *what) : basic_error(what) {}
+    assertion_error(const char *what);
     assertion_error(const assertion_error &) = default;
 };
 
@@ -63,7 +60,7 @@ struct assertion_error : virtual basic_error {
  */
 struct os_error : virtual basic_error {
     os_error() = default;
-    os_error(const char *what) : basic_error(what) {}
+    os_error(const char *what);
     os_error(const os_error &) = default;
 };
 
@@ -78,7 +75,7 @@ struct os_error : virtual basic_error {
  */
 struct os_file_error : virtual os_error {
     os_file_error() = default;
-    os_file_error(const char *what) : os_error(what) {}
+    os_file_error(const char *what);
     os_file_error(const os_file_error &) = default;
 };
 
