@@ -1,3 +1,5 @@
+include(GoogleTest)
+
 add_executable(TestApp "")
 set_target_properties(TestApp PROPERTIES
     OUTPUT_NAME "${XLTS_TESTS_EXE}"
@@ -5,6 +7,6 @@ set_target_properties(TestApp PROPERTIES
 target_link_libraries(TestApp PRIVATE
     GTest::Main
     CommonLibTest)
-add_test(NAME "AllTests" COMMAND TestApp)
+gtest_discover_tests(TestApp)
 
 add_subdirectory("common")
