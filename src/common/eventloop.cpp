@@ -16,48 +16,48 @@ LOG_MODULE("eventloop")
 
 
 struct eventloop_t::event_t {
-	std::function<void()> func;
-	std::chrono::time_point<std::chrono::steady_clock> time;
+    std::function<void()> func;
+    std::chrono::time_point<std::chrono::steady_clock> time;
 };
 
 bool eventloop_t::event_cmp::operator ()(
-		const event_t &e1, const event_t &e2) const noexcept {
+        const event_t &e1, const event_t &e2) const noexcept {
     return e1.time > e2.time;
 }
 
 
 eventloop_t::eventloop_t()
 {
-	int ret;
-	// Create self-pipe
-	ret = pipe(m_self_pipe);
-	if (ret != 0)
+    int ret;
+    // Create self-pipe
+    ret = pipe(m_self_pipe);
+    if (ret != 0)
         OSERROR(pipe, "Cannot create self-pipe");
-	// Make self-pipe non-blocking
-	ret = fcntl(m_self_pipe[0], F_GETFL);
-	if (ret < 0 || fcntl(m_self_pipe[0], F_SETFL, ret | O_NONBLOCK) < 0)
+    // Make self-pipe non-blocking
+    ret = fcntl(m_self_pipe[0], F_GETFL);
+    if (ret < 0 || fcntl(m_self_pipe[0], F_SETFL, ret | O_NONBLOCK) < 0)
         OSERROR(fcntl, "Cannot make self-pipe non-blocking");
-	ret = fcntl(m_self_pipe[1], F_GETFL);
-	if (ret < 0 || fcntl(m_self_pipe[1], F_SETFL, ret | O_NONBLOCK) < 0)
+    ret = fcntl(m_self_pipe[1], F_GETFL);
+    if (ret < 0 || fcntl(m_self_pipe[1], F_SETFL, ret | O_NONBLOCK) < 0)
         OSERROR(fcntl, "Cannot make self-pipe non-blocking");
 }
 
 eventloop_t::~eventloop_t() noexcept
 {
-	while (close(m_self_pipe[0]) < 0) {
-		if (errno != EINTR) {
+    while (close(m_self_pipe[0]) < 0) {
+        if (errno != EINTR) {
             LOG_WARN() << "Error occurred while closing self-pipe: "
                        << strerror(errno);
-			break;
-		}
-	}
-	while (close(m_self_pipe[1]) < 0) {
-		if (errno != EINTR) {
+            break;
+        }
+    }
+    while (close(m_self_pipe[1]) < 0) {
+        if (errno != EINTR) {
             LOG_WARN() << "Error occurred while closing self-pipe: "
                        << strerror(errno);
-			break;
-		}
-	}
+            break;
+        }
+    }
 }
 
 /**
@@ -73,12 +73,12 @@ eventloop_t::~eventloop_t() noexcept
 void eventloop_t::call(const std::function<void ()> &func,
                        const std::chrono::nanoseconds &timeout)
 {
-	event_t event = {func, std::chrono::steady_clock::now() + timeout};
-	{
-		std::lock_guard<std::mutex> m(m_events_mtx);
-		m_events.push(std::move(event));
-	}
-	notify();
+    event_t event = {func, std::chrono::steady_clock::now() + timeout};
+    {
+        std::lock_guard<std::mutex> m(m_events_mtx);
+        m_events.push(std::move(event));
+    }
+    notify();
 }
 
 /**
@@ -95,15 +95,15 @@ void eventloop_t::call(const std::function<void ()> &func,
  * @see unregister_handler() Function to unregister handlers.
  */
 eventloop_t::select_handle_t eventloop_t::register_handler(
-		const eventloop_t::select_handler_t &handler,
-		const eventloop_t::select_fdgetter_t &getter)
+        const eventloop_t::select_handler_t &handler,
+        const eventloop_t::select_fdgetter_t &getter)
 {
-	select_handle_t handle;
-	handle.m_handle = ++m_select_handle_max;
-	m_select_funcs.emplace(handle.m_handle, std::make_tuple(handler, getter));
+    select_handle_t handle;
+    handle.m_handle = ++m_select_handle_max;
+    m_select_funcs.emplace(handle.m_handle, std::make_tuple(handler, getter));
 
-	notify();
-	return handle;
+    notify();
+    return handle;
 }
 
 /**
@@ -113,8 +113,8 @@ eventloop_t::select_handle_t eventloop_t::register_handler(
  */
 void eventloop_t::unregister_handler(const eventloop_t::select_handle_t &handle)
 {
-	ASSERT(m_select_funcs.find(handle.m_handle) != m_select_funcs.end());
-	m_select_funcs.erase(handle.m_handle);
+    ASSERT(m_select_funcs.find(handle.m_handle) != m_select_funcs.end());
+    m_select_funcs.erase(handle.m_handle);
 }
 
 /**
@@ -133,90 +133,90 @@ void eventloop_t::unregister_handler(const eventloop_t::select_handle_t &handle)
 void eventloop_t::exec(std::function<bool()> until, const sigset_t *sigmask)
 {
     while (!until()) {
-		auto now     = std::chrono::steady_clock::now();
-		auto timeout = std::chrono::nanoseconds::max();
+        auto now     = std::chrono::steady_clock::now();
+        auto timeout = std::chrono::nanoseconds::max();
 
-		// Run timed events and set timeout for future events
-		while (true) {
-			event_t e;
-			{
-				std::lock_guard<std::mutex> m(m_events_mtx);
-				if (m_events.empty()) {
-					break;
-				} else if (m_events.top().time > now) {
-					timeout = m_events.top().time - now;
-					break;
-				}
-				e = std::move(m_events.top());
-				m_events.pop();
-			}
-			e.func();
-		}
+        // Run timed events and set timeout for future events
+        while (true) {
+            event_t e;
+            {
+                std::lock_guard<std::mutex> m(m_events_mtx);
+                if (m_events.empty()) {
+                    break;
+                } else if (m_events.top().time > now) {
+                    timeout = m_events.top().time - now;
+                    break;
+                }
+                e = std::move(m_events.top());
+                m_events.pop();
+            }
+            e.func();
+        }
 
-		// Handle available IO or wait for timeout
-		{
-			int max;
-			fd_set rs, ws, es;
+        // Handle available IO or wait for timeout
+        {
+            int max;
+            fd_set rs, ws, es;
 
-			max = 0;
-			FD_ZERO (&rs);
-			FD_ZERO (&ws);
-			FD_ZERO (&es);
+            max = 0;
+            FD_ZERO (&rs);
+            FD_ZERO (&ws);
+            FD_ZERO (&es);
 
-			// Call registered select_fdgetter_t to set arguments for select().
-			for (const auto &entry : m_select_funcs) {
-				int m = 0;
-				auto to = decltype(timeout)::max();
+            // Call registered select_fdgetter_t to set arguments for select().
+            for (const auto &entry : m_select_funcs) {
+                int m = 0;
+                auto to = decltype(timeout)::max();
 
-				std::get<1>(entry.second)(rs, ws, es, m, to);
+                std::get<1>(entry.second)(rs, ws, es, m, to);
 
-				if (to < timeout)
-					timeout = to;
-				if (m > max)
-					max = m;
-			}
+                if (to < timeout)
+                    timeout = to;
+                if (m > max)
+                    max = m;
+            }
 
-			// Announce self-pipe for select()
-			FD_SET(m_self_pipe[0], &rs);
-			max = std::max(m_self_pipe[0], max);
+            // Announce self-pipe for select()
+            FD_SET(m_self_pipe[0], &rs);
+            max = std::max(m_self_pipe[0], max);
 
-			// Call select
-			{
-				struct timespec tv;
-				struct timespec *tvp;
+            // Call select
+            {
+                struct timespec tv;
+                struct timespec *tvp;
 
-				if (timeout == std::chrono::nanoseconds::max()) {
-					tvp = nullptr;
-				} else {
-					tv.tv_sec  = timeout.count() / 1000000000;
-					tv.tv_nsec = timeout.count() % 1000000000;
-					tvp = &tv;
-				}
+                if (timeout == std::chrono::nanoseconds::max()) {
+                    tvp = nullptr;
+                } else {
+                    tv.tv_sec  = timeout.count() / 1000000000;
+                    tv.tv_nsec = timeout.count() % 1000000000;
+                    tvp = &tv;
+                }
 
                 OSCHECK(pselect,(max + 1, &rs, &ws, &es, tvp, sigmask),
                         >= 0 || errno == EINTR);
-			}
+            }
 
-			// Call registered select_handler_t
-			for (const auto &entry : m_select_funcs) {
-				std::get<0>(entry.second)(rs, ws, es);
-			}
+            // Call registered select_handler_t
+            for (const auto &entry : m_select_funcs) {
+                std::get<0>(entry.second)(rs, ws, es);
+            }
 
-			// Clear self-pipe
-			if (FD_ISSET(m_self_pipe[0], &rs)) {
+            // Clear self-pipe
+            if (FD_ISSET(m_self_pipe[0], &rs)) {
                 ssize_t ret;
-				char buf[32];
+                char buf[32];
 
-				do {
-					ret = read(m_self_pipe[0], buf, sizeof(buf));
-				} while (ret == sizeof(buf) || (ret < 0 && errno == EINTR));
+                do {
+                    ret = read(m_self_pipe[0], buf, sizeof(buf));
+                } while (ret == sizeof(buf) || (ret < 0 && errno == EINTR));
 
-				if (ret < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+                if (ret < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
                     OSERROR(read, "Cannot read from self-pipe");
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -229,9 +229,9 @@ void eventloop_t::exec(std::function<bool()> until, const sigset_t *sigmask)
 void eventloop_t::notify()
 {
     ssize_t ret;
-	do {
-		ret = write(m_self_pipe[1], "x", 1);
-	} while (ret < 0 && errno == EINTR);
+    do {
+        ret = write(m_self_pipe[1], "x", 1);
+    } while (ret < 0 && errno == EINTR);
 
     if (ret < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
         OSERROR(write, "Cannot write to self-pipe");
