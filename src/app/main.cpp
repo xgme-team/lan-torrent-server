@@ -12,21 +12,28 @@
 
 #include <configuration.hpp>
 #include <errorhandling.hpp>
+#include <eventloop.hpp>
 #include <logging.hpp>
+
+
+static bool should_stop = false;
 
 
 static void sighandler(int)
 {
-    // TODO stop application
+    should_stop = true;
 }
 
 #ifdef XLTS_USE_SYSTEMD
     static std::chrono::microseconds update_interval;
-    static void statusupdates()
+    static void statusupdates(eventloop_t &eventloop)
     {
+        if (should_stop) {
+            return; // TODO Check if WATCHDOG must still be sent on shutdown.
+        }
         sd_notify(0, "STATUS=Application is running ...\n"
                      "READY=1\n" "WATCHDOG=1\n");
-        // TODO requeue function in eventloop
+        eventloop.call([&]() { statusupdates(eventloop); }, update_interval);
     }
 #endif
 
@@ -74,7 +81,10 @@ static void main0(int argc, char *argv[])
     }
 
     // Start up application (initialize components)
+    LOG_START() << "Initialize components ...";
+    eventloop_t eventloop;
     // TODO
+    LOG_SUCCESS() << "Ready";
 
     // Send status updates when using Systemd
 #   ifdef XLTS_USE_SYSTEMD
@@ -86,11 +96,12 @@ static void main0(int argc, char *argv[])
             );
         else
             update_interval = 4s;
-        statusupdates();
+        statusupdates(eventloop);
 #   endif
 
     // Run eventloop
-    // TODO
+    OSCHECK(sigemptyset,(&signal_mask), == 0);
+    eventloop.exec([&] { return should_stop; }, &signal_mask);
 
     // Notify Systemd about shutdown
 #   ifdef XLTS_USE_SYSTEMD
@@ -99,13 +110,14 @@ static void main0(int argc, char *argv[])
 #   endif
 
     // Shut down application
-    // TODO
+    LOG_START() << "Shutting down ...";
 }
 
 int main(int argc, char *argv[])
 {
     try {
         main0(argc, argv);
+        LOG_SUCCESS() << "Bye";
         return EX_OK;
     } catch (const os_file_error &e) {
         LOG_FAILURE(e) << e.what();

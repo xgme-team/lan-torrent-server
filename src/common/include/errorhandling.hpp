@@ -34,6 +34,18 @@ private:
 };
 
 /**
+ * Exception thrown by ASSERT statements.
+ *
+ * It always represents a software bug since the ASSERT must only be used to
+ * validate internal assumptions of the application.
+ */
+struct assertion_error : virtual basic_error {
+    assertion_error() = default;
+    assertion_error(const char *what) : basic_error(what) {}
+    assertion_error(const assertion_error &) = default;
+};
+
+/**
  * Exception thrown for unexpected system errors.
  *
  * Unexpected system errors refers to errors that are not expected to occur on
@@ -149,6 +161,11 @@ const char *crop_ampersand_and_stdnamespace(const char *) noexcept;
             << errinfo::srcfunc(BOOST_CURRENT_FUNCTION)                 \
             << errinfo::srcfile(__FILE__)                               \
             << errinfo::srcline(static_cast<int>(__LINE__))
+
+#define ASSERT(condition)                                               \
+        (static_cast<bool>(condition)                                   \
+         ? void (0)                                                     \
+         : THROW(assertion_error("Assertion Error: " #condition)))
 
 /**
  * Throws an os_error with the given message.
