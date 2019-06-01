@@ -13,6 +13,7 @@
 #include <configuration.hpp>
 #include <errorhandling.hpp>
 #include <eventloop.hpp>
+#include <httpd.hpp>
 #include <logging.hpp>
 
 
@@ -83,7 +84,7 @@ static void main0(int argc, char *argv[])
     // Start up application (initialize components)
     LOG_START() << "Initialize components ...";
     eventloop_t eventloop;
-    // TODO
+    httpserver_t httpserver(&eventloop);
     LOG_SUCCESS() << "Ready";
 
     // Send status updates when using Systemd
