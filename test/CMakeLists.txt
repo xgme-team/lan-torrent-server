@@ -6,7 +6,9 @@ set_target_properties(TestApp PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 target_link_libraries(TestApp PRIVATE
     GTest::Main
-    CommonLibTest)
+    CommonLibTest
+    RestApiLibTest)
 gtest_discover_tests(TestApp)
 
 add_subdirectory("common")
+add_subdirectory("rest-api")
